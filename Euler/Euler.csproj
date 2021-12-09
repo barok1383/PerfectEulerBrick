@@ -16,8 +16,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="ILGPU" Version="1.0.0-rc2" />
-    <PackageReference Include="ILGPU.Algorithms" Version="1.0.0-rc2" />
+    <PackageReference Include="Amplifier.NET" Version="1.0.8" />
     <PackageReference Include="Math.Gmp.Native.NET" Version="2.0.6" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
   </ItemGroup>

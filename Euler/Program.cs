@@ -6,7 +6,10 @@ using Newtonsoft.Json;
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using Math.Gmp.Native;
-using ILGPU;
+using Amplifier.OpenCL;
+using Amplifier;
+using Amplifier.Extensions;
+using System.IO;
 
 namespace Euler
 {
@@ -46,21 +49,49 @@ namespace Euler
 
         static async Task Main(string[] args)
         {
+
+
+
+
             Program program = new Program();
             program.InitNotPossible();
 
-            using var context = new Context();
 
-            // Enable all algorithms and extension methods
-            context.EnableAlgorithms();
+
+
+            /*//Create instance of OpenCL compiler
+            var compiler = new OpenCLCompiler();
+            //Get the available device list
+            Console.WriteLine("\nList Devices----");
+            foreach (var item in compiler.Devices)
+            {
+                Console.WriteLine(item);
+            }
+
+            //Select a default device
+            compiler.UseDevice(0);
+            //Compile the sample kernel
+            compiler.CompileKernel(typeof(SimpleKernels));
+            //See all the kernel methods
+            Console.WriteLine("\nList Kernels----");
+            foreach (var item in compiler.Kernels)
+            {
+                Console.WriteLine(item);
+            }
+
+            double[] r = new double[100];
+
+
+            var exec = compiler.GetExec();
+            */
 
             while (true)
             {
-                await program.Calcul();
+                await program.Start();
             }
         }
 
-        async Task Calcul()
+        async Task Start()
         {
 
             // get a task from the server
@@ -336,10 +367,10 @@ namespace Euler
 
         /***
          * init the notPossible array that contain a list of numberd
-         * giving impossible int when squared/sumed then squared root
-         * numbers that finish with a 2, 3, 7, 8 don't have int square root
-         * so, if the sum of last digit of 2 numebrs gives a result that last with those numbers
-         * we don't need to calculate the square root
+         * giving impossible int when squared/sumed then squared root.
+         * Numbers that finish with a 2, 3, 7, 8 don't have int square root.
+         * So, if the sum of last digit of 2 numebrs gives a result that last with those numbers
+         * we don't need to calculate the square root.
          * if "a" last with a 1, b can't finish by a 1, 4, 6 or 9
          * etc...
          */
@@ -358,7 +389,6 @@ namespace Euler
             notPossible[7] = notPossible[2];
             notPossible[8] = notPossible[2];
             notPossible[9] = notPossible[1];
-
         }
 
         static bool SqrtPrecision(double x)
@@ -399,5 +429,36 @@ namespace Euler
         public double a;
         public double b;
         public string id;
+    }
+
+
+    class SimpleKernels : OpenCLFunctions
+    {
+        [OpenCLKernel]
+        void CalculAB([Global] double[] r, double a, double bEnd, double increment, double numTask)
+        {
+            int i = get_global_id(0);
+
+
+            int dint = 0;
+            double acarre = a * a;
+
+
+            for (double b = (a + 1 + increment); b <= bEnd; b += numTask)
+            {
+
+                double dcarre = ((acarre) + (b * b));
+                double d = sqrt(dcarre);
+
+
+                // if d is int
+                if ((d == (Int64)d) && (d * d) == dcarre)
+                {
+                    r[dint] = b;
+                    dint++;
+                }
+            }
+
+        }
     }
 }
